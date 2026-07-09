@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>METRO | Task Organizer</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap');
+        
+        body {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            background-color: #030303;
+            color: #e2e8f0;
+            background-image: 
+                radial-gradient(circle at 10% 20%, rgba(99, 102, 241, 0.05) 0%, transparent 40%),
+                radial-gradient(circle at 90% 80%, rgba(139, 92, 246, 0.05) 0%, transparent 40%);
+        }
+
+        .glass {
+            background: rgba(255, 255, 255, 0.02);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .kanban-column {
+            background: rgba(255, 255, 255, 0.01);
+            border: 1px solid rgba(255, 255, 255, 0.03);
+            border-radius: 24px;
+            min-height: 70vh;
+        }
+
+        .task-card {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .task-card:hover {
+            border-color: rgba(99, 102, 241, 0.3);
+            transform: translateY(-2px);
+            background: rgba(255, 255, 255, 0.05);
+        }
+
+        ::-webkit-scrollbar { width: 4px; }
+        ::-webkit-scrollbar-thumb { background: #1e1e2e; border-radius: 10px; }
+    </style>
+</head>
+<body class="min-h-screen p-6 md:p-12">
+
+    <div class="max-w-[1600px] mx-auto">
+        <header class="flex flex-col md:flex-row md:items-center justify-between mb-12 gap-6">
+            <div class="flex items-center gap-4">
+                <div class="w-12 h-12 bg-indigo-600 rounded-2xl flex items-center justify-center shadow-lg shadow-indigo-900/20">
+                    <i data-lucide="layers" class="text-white"></i>
+                </div>
+                <div>
+                    <h1 class="text-3xl font-black tracking-tighter italic">METRO</h1>
+                    <p class="text-[10px] uppercase font-bold text-zinc-600 tracking-[0.3em]">Task Organization System // Localhost</p>
+                </div>
+            </div>
+
+            <div class="flex items-center gap-4">
+                <div class="relative">
+                    <i data-lucide="search" class="absolute left-3 top-3 text-zinc-600" size="16"></i>
+                    <input id="search" type="text" placeholder="Filter tasks..." class="glass rounded-xl pl-10 pr-4 py-2.5 text-sm w-64 outline-none focus:border-indigo-500/50 transition-all">
+                </div>
+                <button onclick="openModal()" class="bg-white text-black px-6 py-2.5 rounded-xl font-bold text-xs uppercase tracking-widest hover:bg-indigo-500 hover:text-white transition-all shadow-xl shadow-indigo-900/10">
+                    CREATE TASK
+                </button>
+            </div>
+        </header>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+            <div class="kanban-column flex flex-col p-4">
+                <div class="flex items-center justify-between px-3 mb-6">
+                    <div class="flex items-center gap-2">
+                        <span class="w-2 h-2 rounded-full bg-zinc-600"></span>
+                        <h2 class="text-xs font-black uppercase text-zinc-500 tracking-widest">Backlog</h2>
+                    </div>
+                    <span id="count-backlog" class="text-[10px] font-bold text-zinc-700">0</span>
+                </div>
+                <div id="col-backlog" class="space-y-3 overflow-y-auto flex-1 pb-4"></div>
+            </div>
+
+            <div class="kanban-column flex flex-col p-4">
+                <div class="flex items-center justify-between px-3 mb-6">
+                    <div class="flex items-center gap-2">
+                        <span class="w-2 h-2 rounded-full bg-indigo-500"></span>
+                        <h2 class="text-xs font-black uppercase text-zinc-500 tracking-widest">To Do</h2>
+                    </div>
+                    <span id="count-todo" class="text-[10px] font-bold text-zinc-700">0</span>
+                </div>
+                <div id="col-todo" class="space-y-3 overflow-y-auto flex-1 pb-4"></div>
+            </div>
+
+            <div class="kanban-column flex flex-col p-4">
+                <div class="flex items-center justify-between px-3 mb-6">
+                    <div class="flex items-center gap-2">
+                        <span class="w-2 h-2 rounded-full bg-amber-500"></span>
+                        <h2 class="text-xs font-black uppercase text-zinc-500 tracking-widest">In Progress</h2>
+                    </div>
+                    <span id="count-doing" class="text-[10px] font-bold text-zinc-700">0</span>
+                </div>
+                <div id="col-doing" class="space-y-3 overflow-y-auto flex-1 pb-4"></div>
+            </div>
+
+            <div class="kanban-column flex flex-col p-4">
+                <div class="flex items-center justify-between px-3 mb-6">
+                    <div class="flex items-center gap-2">
+                        <span class="w-2 h-2 rounded-full bg-emerald-500"></span>
+                        <h2 class="text-xs font-black uppercase text-zinc-500 tracking-widest">Completed</h2>
+                    </div>
+                    <span id="count-done" class="text-[10px] font-bold text-zinc-700">0</span>
+                </div>
+                <div id="col-done" class="space-y-3 overflow-y-auto flex-1 pb-4"></div>
+            </div>
+        </div>
+    </div>
+
+    <div id="task-modal" class="hidden fixed inset-0 bg-black/80 backdrop-blur-sm z-[100] flex items-center justify-center p-6">
+        <div class="glass max-w-lg w-full p-8 rounded-[32px]">
+            <h2 class="text-xl font-bold mb-6">New Operational Task</h2>
+            <div class="space-y-4">
+                <input id="new-title" type="text" placeholder="Task Title" class="w-full bg-white/5 border border-white/10 rounded-xl p-3 text-sm outline-none focus:border-indigo-500/50">
+                <textarea id="new-desc" placeholder="Task Description" class="w-full bg-white/5 border border-white/10 rounded-xl p-3 text-sm h-32 outline-none focus:border-indigo-500/50"></textarea>
+                <div class="grid grid-cols-2 gap-4">
+                    <select id="new-priority" class="bg-zinc-900 border border-white/10 rounded-xl p-3 text-sm outline-none">
+                        <option value="low">Low Priority</option>
+                        <option value="medium" selected>Medium Priority</option>
+                        <option value="high">High Priority</option>
+                    </select>
+                    <select id="new-status" class="bg-zinc-900 border border-white/10 rounded-xl p-3 text-sm outline-none">
+                        <option value="backlog">Backlog</option>
+                        <option value="todo" selected>To Do</option>
+                    </select>
+                </div>
+            </div>
+            <div class="flex justify-end gap-3 mt-8">
+                <button onclick="closeModal()" class="px-6 py-2.5 rounded-xl text-xs font-bold uppercase text-zinc-500 hover:text-white transition-all">Cancel</button>
+                <button onclick="saveTask()" class="bg-indigo-600 px-6 py-2.5 rounded-xl text-xs font-bold uppercase tracking-widest hover:bg-indigo-500 shadow-lg shadow-indigo-900/20">Authorize</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        lucide.createIcons();
+        async function fetchTasks() {
+            const res = await fetch('/api/tasks');
+            const tasks = await res.json();
+            renderBoard(tasks);
+        }
+        function renderBoard(tasks) {
+            const cols = { backlog: [], todo: [], doing: [], done: [] };
+            tasks.forEach(t => cols[t.status]?.push(t));
+            Object.keys(cols).forEach(status => {
+                const container = document.getElementById(`col-${status}`);
+                document.getElementById(`count-${status}`).innerText = cols[status].length;
+                container.innerHTML = cols[status].map(t => `
+                    <div class="task-card p-5 rounded-2xl">
+                        <div class="flex justify-between items-start mb-3">
+                            <span class="text-[9px] uppercase font-black tracking-widest px-2 py-0.5 rounded ${getPriorityStyle(t.priority)}">${t.priority}</span>
+                            <div class="flex gap-1">
+                                <button onclick="deleteTask(${t.id})" class="text-zinc-600 hover:text-red-400"><i data-lucide="x" size="12"></i></button>
+                            </div>
+                        </div>
+                        <h3 class="text-sm font-bold mb-1">${t.title}</h3>
+                        <p class="text-[11px] text-zinc-500 leading-relaxed mb-4">${t.description}</p>
+                        <div class="flex items-center gap-2 pt-4 border-t border-white/5">
+                            ${t.status !== 'backlog' ? `<button onclick="moveTask(${t.id}, 'backlog')" class="p-1.5 rounded-lg bg-zinc-800/50 hover:bg-zinc-800 text-zinc-400"><i data-lucide="history" size="12"></i></button>` : ''}
+                            ${t.status !== 'todo' ? `<button onclick="moveTask(${t.id}, 'todo')" class="p-1.5 rounded-lg bg-zinc-800/50 hover:bg-zinc-800 text-zinc-400"><i data-lucide="clipboard-list" size="12"></i></button>` : ''}
+                            ${t.status !== 'doing' ? `<button onclick="moveTask(${t.id}, 'doing')" class="p-1.5 rounded-lg bg-zinc-800/50 hover:bg-zinc-800 text-zinc-400"><i data-lucide="play" size="12"></i></button>` : ''}
+                            ${t.status !== 'done' ? `<button onclick="moveTask(${t.id}, 'done')" class="p-1.5 rounded-lg bg-zinc-800/50 hover:bg-zinc-800 text-zinc-400"><i data-lucide="check" size="12"></i></button>` : ''}
+                        </div>
+                    </div>
+                `).join('');
+            });
+            lucide.createIcons();
+        }
+        function getPriorityStyle(p) {
+            if (p === 'high') return 'bg-rose-500/10 text-rose-400';
+            if (p === 'medium') return 'bg-amber-500/10 text-amber-400';
+            return 'bg-zinc-500/10 text-zinc-400';
+        }
+        async function saveTask() {
+            const title = document.getElementById('new-title').value;
+            const description = document.getElementById('new-desc').value;
+            const priority = document.getElementById('new-priority').value;
+            const status = document.getElementById('new-status').value;
+            if (!title) return;
+            await fetch('/api/tasks', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ title, description, priority, status })
+            });
+            closeModal(); fetchTasks();
+        }
+        async function moveTask(id, status) {
+            await fetch(`/api/tasks/${id}/status`, {
+                method: 'PATCH',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ status })
+            });
+            fetchTasks();
+        }
+        async function deleteTask(id) {
+            if (confirm('Authorize record purge?')) {
+                await fetch(`/api/tasks/${id}`, { method: 'DELETE' });
+                fetchTasks();
+            }
+        }
+        function openModal() { document.getElementById('task-modal').classList.remove('hidden'); }
+        function closeModal() { document.getElementById('task-modal').classList.add('hidden'); }
+        fetchTasks();
+    </script>
+</body>
+</html>
